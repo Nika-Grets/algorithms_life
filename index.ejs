@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вычисление факториала и чисел Фибоначчи</title>
+    <style>
+        /* стили для оформления */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ffe7fc;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #892892;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 200px;
+            padding: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            background-color: #af4c91;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #6d264f;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .error {
+            color: #d32f2f;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Вычисление факториала и чисел Фибоначчи</h1>
+    
+    <!-- вычисления факториала -->
+    <div class="section">
+        <h2>Факториал числа</h2>
+        <p>Факториал числа n (обозначается n!) — это произведение всех натуральных чисел от 1 до n.</p>
+        
+        <!-- форма для ввода числа для факториала -->
+        <form method="GET" action="/">
+            <div class="form-group">
+                <label for="factorialInput">Введите число для вычисления факториала:</label>
+                <input type="number" id="factorialInput" name="factorialInput" 
+                       value="<%= factorialInput %>" min="0" max="20" required>
+            </div>
+            
+            <!-- cохраняем значение в скрытом поле, чтобы не потерять при отправке формы -->
+            <% if (fibonacciInput) { %>
+                <input type="hidden" name="fibonacciInput" value="<%= fibonacciInput %>">
+            <% } %>
+            
+            <button type="submit">Вычислить факториал</button>
+        </form>
+        
+        <!-- для отображения результата вычисления факториала -->
+
+<% if (factorialResult !== null) { %>
+            <div class="result">
+                <b>Результат:</b> <%= factorialInput %>! = <%= factorialResult %>
+            </div>
+        <% } %>
+        
+        <!-- для отображения ошибки факториала -->
+        <% if (factorialError) { %>
+            <div class="error">
+                Ошибка: <%= factorialError %>
+            </div>
+        <% } %>
+    </div>
+    
+    <!--  вычисления последовательности Фибоначчи -->
+    <div class="section">
+        <h2>Числа Фибоначчи</h2>
+        <p>Последовательность Фибоначчи — это ряд чисел, где каждое следующее число является суммой двух предыдущих.</p>
+        
+        <!-- Форма для ввода количества чисел Фибоначчи -->
+        <form method="GET" action="/">
+            <div class="form-group">
+                <label for="fibonacciInput">Введите количество чисел Фибоначчи:</label>
+                <input type="number" id="fibonacciInput" name="fibonacciInput" 
+                       value="<%= fibonacciInput %>" min="1" max="50" required>
+            </div>
+            
+            <!-- сохраняем значение в скрытом поле -->
+            <% if (factorialInput) { %>
+                <input type="hidden" name="factorialInput" value="<%= factorialInput %>">
+            <% } %>
+            
+            <button type="submit">Вычислить последовательность Фибоначчи</button>
+        </form>
+        
+        <!-- отображение результата вычисления последовательности Фибоначчи -->
+        <% if (fibonacciResult !== null) { %>
+            <div class="result">
+                <strong>Результат (первые <%= fibonacciInput %> чисел):</strong><br>
+                [<%= fibonacciResult.join(', ') %>]
+            </div>
+        <% } %>
+        
+        <!-- ошибки Фибоначчи -->
+        <% if (fibonacciError) { %>
+            <div class="error">
+                Ошибка: <%= fibonacciError %>
+            </div>
+        <% } %>
+    </div>
+    
+</body>
+</html>
+
