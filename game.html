@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Игра "Жизнь"</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial;
+        }
+        .controls {
+            margin: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        button {
+            padding: 8px 15px;
+            margin: 0 5px;
+        }
+        .size-input {
+            width: 60px;
+            padding: 5px;
+        }
+        .speed-control {
+            width: 150px;
+        }
+        canvas {
+            border: 1px solid #000;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="control-group">
+            <label>Ширина:</label>
+            <input type="number" class="size-input" id="width" value="40" min="10">
+        </div>
+        <div class="control-group">
+            <label>Высота:</label>
+            <input type="number" class="size-input" id="height" value="40" min="10">
+        </div>
+        <div class="control-group">
+            <label>Скорость:</label>
+            <input type="range" class="speed-control" id="speed" min="1" max="100" value="10">
+            <span id="speedValue">10</span>
+        </div>
+        <div class="control-group">
+            <button onclick="initGame()">Создать поле</button>
+            <button onclick="startStop()">Старт/Стоп</button>
+            <button onclick="clearGrid()">Очистить</button>
+            <button onclick="randomize()">Случайное заполнение</button>
+        </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        // === ОСНОВНЫЕ ПЕРЕМЕННЫЕ ===
+        let canvas = document.getElementById('gameCanvas');
+        let ctx = canvas.getContext('2d');
+        let grid = [];
+        let isRunning = false;
+        let animationId;
+        const cellSize = 15;
+        
+        // Переменная для хранения текущей скорости (в кадрах в секунду)
+        let currentSpeed = 10;
+        
+        // Время последнего обновления (для контроля скорости)
+        let lastUpdateTime = 0;
+
+        // === ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ ИГРЫ ===
+        function initGame() {
+            const width = parseInt(document.getElementById('width').value);
+            const height = parseInt(document.getElementById('height').value);
+            
+            canvas.width = width * cellSize;
+            canvas.height = height * cellSize;
+            
+            grid = Array(height).fill().map(() => Array(width).fill(0));
+            drawGrid();
+        }
+
+        // === ФУНКЦИЯ ОТРИСОВКИ СЕТКИ ===
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let y = 0; y < grid.length; y++) {
+                for (let x = 0; x < grid[y].length; x++) {
+                    ctx.fillStyle = grid[y][x] ? '#000' : '#fff';
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+
+        // === ФУНКЦИЯ РАСЧЕТА СЛЕДУЮЩЕГО ПОКОЛЕНИЯ ===
+        function nextGeneration() {
+            const newGrid = grid.map(arr => [...arr]);
+            
+            for (let y = 0; y < grid.length; y++) {
+                for (let x = 0; x < grid[y].length; x++) {
+                    const neighbors = countNeighbors(x, y);
+                    
+                    if (grid[y][x] === 1) {
+                        newGrid[y][x] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
+                    } else {
+                        newGrid[y][x] = neighbors === 3 ? 1 : 0;
+                    }
+                }
+            }
+            
+            grid = newGrid;
+            drawGrid();
+        }
+
+// === ФУНКЦИЯ ПОДСЧЕТА СОСЕДЕЙ ===
+        function countNeighbors(x, y) {
+            let count = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (dx === 0 && dy === 0) continue;
+                    
+                    const ny = (y + dy + grid.length) % grid.length;
+                    const nx = (x + dx + grid[0].length) % grid[0].length;
+                    
+                    count += grid[ny][nx];
+                }
+            }
+            return count;
+        }
+
+        // === ЦИКЛ С КОНТРОЛЕМ СКОРОСТИ ===
+        function gameLoop(timestamp) {
+            // timestamp - текущее время в миллисекундах
+            // Вычисляем, сколько времени прошло с последнего обновления
+            const deltaTime = timestamp - lastUpdateTime;
+            const updateInterval = 1000 / currentSpeed;
+            
+            if (deltaTime >= updateInterval) {
+                nextGeneration();
+                lastUpdateTime = timestamp;
+            }
+            
+            // цикл анимации если симуляция запущена
+            if (isRunning) {
+                animationId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // === ФУНКЦИЯ СТАРТ/СТОП ===
+        function startStop() {
+            isRunning = !isRunning;
+            
+            if (isRunning) {
+                // Сбрасываем время последнего обновления
+                lastUpdateTime = performance.now();
+                // Запускаем игровой цикл
+                animationId = requestAnimationFrame(gameLoop);
+            } else {
+                cancelAnimationFrame(animationId);
+            }
+        }
+
+        // === ФУНКЦИЯ ОБНОВЛЕНИЯ СКОРОСТИ ===
+        function updateSpeed() {
+            // Получаем значение из ползунка скорости
+            const speedInput = document.getElementById('speed');
+            const speedValue = document.getElementById('speedValue');
+            
+            // Обновляем отображаемое значение скорости
+            currentSpeed = parseInt(speedInput.value);
+            speedValue.textContent = currentSpeed;
+            
+            // Если симуляция запущена скорость автоматически применится в gameLoop
+        }
+
+        // === ФУНКЦИЯ ОЧИСТКИ СЕТКИ ===
+        function clearGrid() {
+            grid = grid.map(row => row.map(() => 0));
+            drawGrid();
+        }
+
+        // === ФУНКЦИЯ СЛУЧАЙНОГО ЗАПОЛНЕНИЯ ===
+        function randomize() {
+            grid = grid.map(row => row.map(() => Math.random() > 0.85 ? 1 : 0));
+            drawGrid();
+        }
+
+        // === ОБРАБОТЧИКИ СОБЫТИЙ ===
+        
+        // Обработчик клика по canvas
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / cellSize);
+            const y = Math.floor((e.clientY - rect.top) / cellSize);
+            
+            grid[y][x] = grid[y][x] ? 0 : 1;
+            drawGrid();
+        });
+
+        // Обработчик изменения скорости
+        document.getElementById('speed').addEventListener('input', updateSpeed);
+
+        initGame();
+        updateSpeed();
+    </script>
+</body>
+</html>
