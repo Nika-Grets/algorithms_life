@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fastify + EJS</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .result { background: #f0f0f0; padding: 15px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Результаты:</h1>
+    
+    <div class="result">
+        <strong>Список в прямом порядке:</strong><br>
+        <%= listForward %>
+    </div>
+    
+    <div class="result">
+        <strong>Список в обратном порядке:</strong><br>
+        <%= listBackward %>
+    </div>
+    
+    <div class="result">
+        <strong>Общая зарплата всех сотрудников:</strong><br>
+        <%= totalSalary.toLocaleString('ru-RU') %> ₽
+    </div>
+</body>
+</html>
